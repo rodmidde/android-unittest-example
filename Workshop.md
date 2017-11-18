@@ -18,17 +18,25 @@ To use this example you need to install the following tools:
 
 -------
 
+Unit Testing
+============
+
+-------
+
 Testing
-=======
+-------
 For testing Android apps, you typically create [these types of automated unit tests](https://developer.android.com/training/testing/unit-testing/index.html):
 
 * Local tests: Unit tests that run on your local machine only. These tests are compiled to run locally on the Java Virtual Machine (JVM) to minimize execution time. Use this approach to run unit tests that have no dependencies on the Android framework or have dependencies that can be filled by using mock objects.
+
+-------
+
 * Instrumented tests: Unit tests that run on an Android device or emulator. These tests have access to instrumentation information, such as the Context for the app under test. Use this approach to run unit tests that have Android dependencies which cannot be easily filled by using mock objects.
 
 -------
 
 Preface
-=======
+-------
 Suppose you want to build an Android application in a TDD-style. There are a few nasty things about Android that makes unit testing more difficult than for normal Java applications.
 
 -------
@@ -52,8 +60,14 @@ There are also good design and architecture choices to make that simplify unit t
 
 -------
 
+
 Android Annotations
 ===================
+
+--------
+
+Android Annotations
+-------------------
 
 * AndroidAnnotations is an Open Source annotation processing library that speeds up Android development
 * It takes care of the plumbing, and lets you concentrate on what's really important.
@@ -62,7 +76,7 @@ Android Annotations
 -------
 
 Annotation Processing
-=====================
+---------------------
 
 * Annotation Processing is a feature of the Java compiler that lets you write a library to process source code annotations at compile time
 * Runs your annotation processing code in the compiler and can generate new source code files that will also be compiled
@@ -71,7 +85,7 @@ Annotation Processing
 -------
 
 How does it work
-=================
+----------------
 
 * AndroidAnnotations is a Java Annotation Processing Tool that generates Android specific source code based on annotations
 * It enhances a class by subclassing it with a generated class that adds and overrides methods in the annotated class
@@ -80,7 +94,7 @@ How does it work
 -------
 
 How do you use it
-=================
+-----------------
 Everywhere in the project that you refer to an enhanced class you append an underscore to the class name:
 
 * In the Android Manifest
@@ -90,7 +104,7 @@ Everywhere in the project that you refer to an enhanced class you append an unde
 -------
 
 Example: Activity and Views
-===========================
+---------------------------
 ```{.java include="src/main/java/com/example/activity/DeckardActivity.java" start="15" stop="22"}
 ```
 ```{.java include="src/main/java/com/example/activity/DeckardActivity.java" start="37" stop="37"}
@@ -99,7 +113,7 @@ Example: Activity and Views
 -------
 
 Example: Bean and EBean
-=======================
+-----------------------
 ```{.java include="src/main/java/com/example/activity/DeckardActivity.java" start="15" stop="16"}
 ```
 ```{.java include="src/main/java/com/example/activity/DeckardActivity.java" start="22" stop="37"}
@@ -108,14 +122,14 @@ Example: Bean and EBean
 -------
 
 Example: Background and UIThread
-================================
+--------------------------------
 ```{.java include="src/main/java/com/example/activity/ButtonClickListener.java" start="13" stop="42"}
 ```
 
 -------
 
 Android Annotations in Gradle
-=============================
+-----------------------------
 ```{.yaml include="build.gradle" start="65" stop="67"}
 ```
 ```{.yaml include="build.gradle" start="76" stop="76"}
@@ -123,8 +137,13 @@ Android Annotations in Gradle
 
 -------
 
+Mocking
+=======
+
+--------
+
 JUnit and Mockito in Gradle
-===========================
+---------------------------
 Just like in Maven:
 
 ```{.yaml include="build.gradle" start="65" stop="65"}
@@ -137,13 +156,13 @@ Just like in Maven:
 -------
 
 Robolectric
-===========
+-----------
 Running tests on an Android emulator or device is slow! Building, deploying, and launching the app often takes a minute or more. That’s no way to do TDD. There must be a better way.
 
 -------
 
 Unit testing an Activity
-========================
+------------------------
 Suppose you want to unit test and activity. You try this:
 
 ```java
@@ -162,7 +181,7 @@ When you run this test, the console says: ["Error: 'Method ... not mocked'"](htt
 -------
 
 Error: "Method ... not mocked"
-==============================
+------------------------------
 If you run a test that calls an API from the Android SDK that you do not mock, you'll receive an error that says this method is not mocked. That's because the android.jar file used to run unit tests does not contain any actual code (those APIs are provided only by the Android system image on a device).
 
 Instead, all methods throw exceptions by default. 
@@ -170,8 +189,11 @@ Instead, all methods throw exceptions by default.
 -------
 
 Running unit tests without Android device
-=========================================
+-----------------------------------------
 [Robolectric](http://robolectric.org/) is a unit test framework that de-fangs the Android SDK jar so you can test-drive the development of your Android app. Tests run inside the JVM on your workstation in seconds. With Robolectric and Android Annotations you can write tests like this:
+
+-------
+
 
 ```{.java include="src/test/java/com/example/activity/DeckardActivityTest.java" start="10" stop="18"}
 ```
@@ -179,7 +201,7 @@ Running unit tests without Android device
 -------
 
 Robolectric in Gradle
-=====================
+---------------------
 ```{.yaml include="build.gradle" start="65" stop="65"}
 ```
 ```{.yaml include="build.gradle" start="75" stop="76"}
@@ -192,7 +214,7 @@ Noticed the _ after DeckardActivity? This is the version that comes from Android
 -------
 
 Test Doubles
-============
+------------
 
 ![Figure 1: Different Test Doubles](http://xunitpatterns.com/Types%20Of%20Test%20Doubles-implementation.gif)
 
@@ -200,6 +222,11 @@ Test Doubles
 
 Unit vs Integration Tests
 =========================
+
+--------
+
+Unit vs Integration Tests
+-------------------------
 
 The DeckardActivityTest used the real dependency on RestDataController so it is in fact an integration test. Let's look at a class that we can unit test:
 
@@ -218,15 +245,20 @@ Both dependencies can be mocked:
 -------
 
 Drinking Mockito when you're in AA :)
-=====================================
+-------------------------------------
 
 ```{.java include="src/test/java/com/example/activity/ButtonClickListenerTest.java" start="16" stop="43"}
 ```
 
 -------
 
+REST
+====
+
+--------
+
 Doing REST calls in Android
-===========================
+----------------------------
 We saw the RestDataController as a dependency for the ButtonClickListener, but how to do REST calls from an Android device?
 
 There are two things things to consider:
@@ -234,11 +266,13 @@ There are two things things to consider:
 * Android does not allow you to access services on the main thread, luckily AA has @Background and @UIThread (but you can do this with standard Android [too](https://developer.android.com/guide/components/processes-and-threads.html))
 * You need to alter the AndroidManifest.xml:
 
-```{.xml include="AndroidManifest.xml" start="15" stop="15"}
+```{.xml include="src/main/AndroidManifest.xml" start="15" stop="15"}
 ```
 
+-------
+
 REST in Android: Retrofit2
-==========================
+--------------------------
 There are different options/APIs to do REST calls:
  
 * JAX-RS Client, like Jersey. Heavyweight, has an own DI container (HK2) built on Guice. 
@@ -248,7 +282,7 @@ There are different options/APIs to do REST calls:
 -------
 
 Retrofit in Gradle
-==================
+------------------
 
 ```{.yaml include="build.gradle" start="65" stop="65"}
 ```
@@ -260,7 +294,7 @@ Retrofit in Gradle
 -------
 
 Retrofit in your code
-=====================
+---------------------
 
 With Retrofit the REST interface is mapped to a Java interface like this:
 
@@ -270,7 +304,7 @@ With Retrofit the REST interface is mapped to a Java interface like this:
 -------
 
 Retrofit in your code
-=====================
+---------------------
 Using the Retrofit Builder and a JSON Mapper we can offer a simple Java interface to a client:
 
 ```{.java include="src/main/java/com/example/activity/RetrofitBuilder.java" start="11" stop="19"}
@@ -279,7 +313,7 @@ Using the Retrofit Builder and a JSON Mapper we can offer a simple Java interfac
 -------
 
 Retrofit in your code
-=====================
+---------------------
 And the client can use the interface to call methods just like it's a local method invocation:
 
 ```{.java include="src/main/java/com/example/activity/RestDataController.java" start="11" stop="29"}
@@ -288,7 +322,7 @@ And the client can use the interface to call methods just like it's a local meth
 -------
 
 Testing the RestDataController
-==============================
+------------------------------
 To see if the RestDataController really gets the data from our API we can create a simple integration test. We don't need Robolectric here because there are no Android API dependencies to shadow:
 
 ```{.java include="src/test/java/com/example/activity/RestDataControllerIntegrationTest.java" start="7" stop="14"}
@@ -296,8 +330,13 @@ To see if the RestDataController really gets the data from our API we can create
 
 -------
 
+Running tests and getting test coverage
+=======================================
+
+--------
+
 Running tests in Gradle
-=======================
+-----------------------
 
 ```yaml
 ./gradlew test
@@ -306,7 +345,7 @@ Running tests in Gradle
 -------
 
 Getting test coverage for Android projects
-==========================================
+-------------------------------------------
 
 Jacoco is a tool for Java application that is able to generate a test coverage file that can be read by SonarQube. We need the following adjustments to build.gradle:
 
@@ -316,14 +355,16 @@ Jacoco is a tool for Java application that is able to generate a test coverage f
 ```{.yaml include="build.gradle" start="36" stop="40"}
 ```
 
+-------
+
+
 ```{.yaml include="build.gradle" start="78" stop="102"}
 ```
 
-
-
 Resources
 =========
-[Building Local Tests](https://developer.android.com/training/testing/unit-testing/local-unit-tests.html)
-[Building Effective Unit Tests](https://developer.android.com/training/testing/unit-testing/index.html)
-[Unit Test your Application](https://github.com/androidannotations/androidannotations/wiki/Unit-test-your-application)
-[Android Annotations Cookbook](https://github.com/androidannotations/androidannotations/wiki/Cookbook)
+
+* [Building Local Tests](https://developer.android.com/training/testing/unit-testing/local-unit-tests.html)
+* [Building Effective Unit Tests](https://developer.android.com/training/testing/unit-testing/index.html)
+* [Unit Test your Application](https://github.com/androidannotations/androidannotations/wiki/Unit-test-your-application)
+* [Android Annotations Cookbook](https://github.com/androidannotations/androidannotations/wiki/Cookbook)
