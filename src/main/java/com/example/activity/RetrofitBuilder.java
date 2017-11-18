@@ -13,6 +13,7 @@ class RetrofitBuilder {
     public JsonPlaceHolderAPI create(Class<JsonPlaceHolderAPI> apiClass) {
         Gson gson = new GsonBuilder().setLenient().create();
         return new Retrofit.Builder().baseUrl(JsonPlaceHolderAPI.BASE_URL).
-                addConverterFactory(GsonConverterFactory.create(gson)).build().create(apiClass);
+                addConverterFactory(
+                        GsonConverterFactory.create(gson)).build().create(apiClass);
     }
 }

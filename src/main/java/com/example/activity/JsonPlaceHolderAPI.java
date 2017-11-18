@@ -6,7 +6,7 @@ import retrofit2.http.Path;
 
 
 interface JsonPlaceHolderAPI {
-    public static final String BASE_URL = "https://jsonplaceholder.typicode.com/";
+    String BASE_URL = "https://jsonplaceholder.typicode.com/";
 
     @GET("comments/{id}")
     Call<Comment> getComments(@Path("id") int id);

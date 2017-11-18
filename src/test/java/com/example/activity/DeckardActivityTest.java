@@ -11,7 +11,7 @@ import static org.junit.Assert.assertNotNull;
 public class DeckardActivityTest {
 
     @Test
-    public void whenButtonClickedTheEditTextShouldShowHelloWorld() throws Exception {
+    public void whenActivityCreatedAppDependenciesAreSetup() throws Exception {
         DeckardActivity_ deckardActivity = Robolectric.setupActivity(DeckardActivity_.class);
         assertNotNull(deckardActivity.buttonClickHandler);
     }

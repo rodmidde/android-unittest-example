@@ -31,13 +31,13 @@ public class ButtonClickListenerTest {
     View eventSource;
 
     @Test
-    public void whenButtonClickedTheEditTextContainsHelloWorld()
+    public void whenButtonClickedTheEditTextContainsHelloOOSE()
     {
         when(deckardActivity.findViewById(R.id.editText)).thenReturn(editText);
-        when(dataController.getData()).thenReturn("Hello World");
+        when(dataController.getData()).thenReturn("Hello OOSE");
         buttonClickListener.setActivity(deckardActivity);
         buttonClickListener.setDataController(dataController);
         buttonClickListener.onClick(eventSource);
-        verify(editText).setText("Hello World");
+        verify(editText).setText("Hello OOSE");
     }
 }
