@@ -10,7 +10,7 @@ import java.util.logging.Logger;
 
 @EBean
 public class RestDataController implements IDataController {
-    private final Logger logger = Logger.getLogger(getClass().getName());
+    private final static Logger logger = Logger.getLogger(RestDataController.class.getName());
 
     @Bean
     RetrofitBuilder retrofitBuilder;

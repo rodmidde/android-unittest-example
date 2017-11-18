@@ -42,6 +42,7 @@ android {
     testOptions {
         unitTests {
             includeAndroidResources = true
+            returnDefaultValues = true
         }
 
     }
@@ -70,8 +71,10 @@ dependencies {
     implementation 'com.squareup.retrofit2:retrofit:2.1.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.1.0'
 
+    testImplementation 'pl.pojo:pojo-tester:0.7.5'
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.mockito:mockito-core:2.3.0'
+    testImplementation 'org.powermock:powermock-api-mockito2:1.7.3'
     testImplementation 'org.robolectric:robolectric:3.5.1'
 }
 

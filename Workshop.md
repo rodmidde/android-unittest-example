@@ -130,9 +130,9 @@ Example: Background and UIThread
 
 Android Annotations in Gradle
 -----------------------------
-```{.yaml include="build.gradle" start="65" stop="67"}
+```{.yaml include="build.gradle" start="66" stop="68"}
 ```
-```{.yaml include="build.gradle" start="76" stop="76"}
+```{.yaml include="build.gradle" start="79" stop="79"}
 ```
 
 -------
@@ -142,15 +142,13 @@ Mocking
 
 --------
 
-JUnit and Mockito in Gradle
----------------------------
+JUnit and Mockito in Gradle (also Powermock for overriding private loggers
+--------------------------------------------------------------------------
 Just like in Maven:
 
-```{.yaml include="build.gradle" start="65" stop="65"}
+```{.yaml include="build.gradle" start="66" stop="66"}
 ```
-```{.yaml include="build.gradle" start="73" stop="74"}
-```
-```{.yaml include="build.gradle" start="76" stop="76"}
+```{.yaml include="build.gradle" start="76" stop="79"}
 ```
 
 -------
@@ -166,7 +164,7 @@ Unit testing an Activity
 Suppose you want to unit test and activity. You try this:
 
 ```java
-public class DeckardActivityTest {
+public class DeckardActivityIntegrationTest {
 
     @Test
     public void whenActivityCreatedAppDependenciesAreSetup() throws Exception {
@@ -182,9 +180,10 @@ When you run this test, the console says: ["Error: 'Method ... not mocked'"](htt
 
 Error: "Method ... not mocked"
 ------------------------------
-If you run a test that calls an API from the Android SDK that you do not mock, you'll receive an error that says this method is not mocked. That's because the android.jar file used to run unit tests does not contain any actual code (those APIs are provided only by the Android system image on a device).
+If you run a test that calls an API from the Android SDK that you do not mock, you'll receive an error that says this method is not mocked. That's because the android.jar file used to run unit tests does not contain any actual code (those APIs are provided only by the Android system image on a device). Instead, all methods throw exceptions by default, this behaviour can be stopped however:
 
-Instead, all methods throw exceptions by default. 
+```{.yaml include="build.gradle" start="42" stop="48"}
+```
 
 -------
 
@@ -195,16 +194,16 @@ Running unit tests without Android device
 -------
 
 
-```{.java include="src/test/java/com/example/activity/DeckardActivityTest.java" start="10" stop="18"}
+```{.java include="src/test/java/com/example/activity/DeckardActivityIntegrationTest.java" start="10" stop="18"}
 ```
 
 -------
 
 Robolectric in Gradle
 ---------------------
-```{.yaml include="build.gradle" start="65" stop="65"}
+```{.yaml include="build.gradle" start="66" stop="66"}
 ```
-```{.yaml include="build.gradle" start="75" stop="76"}
+```{.yaml include="build.gradle" start="78" stop="79"}
 ```
 
 -------
@@ -228,7 +227,14 @@ Unit vs Integration Tests
 Unit vs Integration Tests
 -------------------------
 
-The DeckardActivityTest used the real dependency on RestDataController so it is in fact an integration test. Let's look at a class that we can unit test:
+The DeckardActivityIntegrationTest used the real dependency on RestDataController so it is in fact an integration test. We can also make a unit test for this class:
+
+```{.java include="src/test/java/com/example/activity/DeckardActivityTest.java" start="15" stop="34"}
+```
+
+--------
+
+Let's look at another class that we can unit test:
 
 ```{.java include="src/main/java/com/example/activity/ButtonClickListener.java" start="13" stop="42"}
 ```
@@ -284,11 +290,11 @@ There are different options/APIs to do REST calls:
 Retrofit in Gradle
 ------------------
 
-```{.yaml include="build.gradle" start="65" stop="65"}
+```{.yaml include="build.gradle" start="66" stop="66"}
 ```
-```{.yaml include="build.gradle" start="69" stop="71"}
+```{.yaml include="build.gradle" start="71" stop="72"}
 ```
-```{.yaml include="build.gradle" start="76" stop="76"}
+```{.yaml include="build.gradle" start="79" stop="79"}
 ```
 
 -------
@@ -307,7 +313,7 @@ Retrofit in your code
 ---------------------
 Using the Retrofit Builder and a JSON Mapper we can offer a simple Java interface to a client:
 
-```{.java include="src/main/java/com/example/activity/RetrofitBuilder.java" start="11" stop="19"}
+```{.java include="src/main/java/com/example/activity/RetrofitBuilder.java" start="11" stop="21"}
 ```
 
 -------
@@ -321,11 +327,21 @@ And the client can use the interface to call methods just like it's a local meth
 
 -------
 
-Testing the RestDataController
-------------------------------
+Integration Testing the RestDataController
+------------------------------------------
 To see if the RestDataController really gets the data from our API we can create a simple integration test. We don't need Robolectric here because there are no Android API dependencies to shadow:
 
 ```{.java include="src/test/java/com/example/activity/RestDataControllerIntegrationTest.java" start="7" stop="14"}
+```
+
+-------
+
+
+Unit Testing the RestDataController
+-----------------------------------
+To see if the RestDataController works nicely with the RetrofitBuilder:
+
+```{.java include="src/test/java/com/example/activity/RestDataControllerTest.java" start="18" stop="45"}
 ```
 
 -------
@@ -358,7 +374,7 @@ Jacoco is a tool for Java application that is able to generate a test coverage f
 -------
 
 
-```{.yaml include="build.gradle" start="78" stop="102"}
+```{.yaml include="build.gradle" start="81" stop="105"}
 ```
 
 Resources

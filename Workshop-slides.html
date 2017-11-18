@@ -232,22 +232,23 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <section class="slide level1">
 
 <h2 id="android-annotations-in-gradle">Android Annotations in Gradle</h2>
-<div class="sourceCode" include="build.gradle" start="65" stop="67"><pre class="sourceCode yaml"><code class="sourceCode yaml">dependencies <span class="kw">{</span>
+<div class="sourceCode" include="build.gradle" start="66" stop="68"><pre class="sourceCode yaml"><code class="sourceCode yaml">dependencies <span class="kw">{</span>
     <span class="fu">implementation &quot;org.androidannotations:</span>androidannotations-api:4.4.0&quot;
     annotationProcessor &quot;org.androidannotations:androidannotations:4.4.0&quot;</code></pre></div>
-<div class="sourceCode" include="build.gradle" start="76" stop="76"><pre class="sourceCode yaml"><code class="sourceCode yaml">}</code></pre></div>
+<div class="sourceCode" include="build.gradle" start="79" stop="79"><pre class="sourceCode yaml"><code class="sourceCode yaml">}</code></pre></div>
 </section>
 <section id="mocking" class="slide level1">
 <h1>Mocking</h1>
 </section>
 <section class="slide level1">
 
-<h2 id="junit-and-mockito-in-gradle">JUnit and Mockito in Gradle</h2>
+<h2 id="junit-and-mockito-in-gradle-also-powermock-for-overriding-private-loggers">JUnit and Mockito in Gradle (also Powermock for overriding private loggers</h2>
 <p>Just like in Maven:</p>
-<div class="sourceCode" include="build.gradle" start="65" stop="65"><pre class="sourceCode yaml"><code class="sourceCode yaml">dependencies <span class="kw">{</span></code></pre></div>
-<div class="sourceCode" include="build.gradle" start="73" stop="74"><pre class="sourceCode yaml"><code class="sourceCode yaml">    <span class="fu">testImplementation &#39;junit:</span>junit:4.12&#39;
-    <span class="fu">testImplementation &#39;org.mockito:</span>mockito-core:2.3.0&#39;</code></pre></div>
-<div class="sourceCode" include="build.gradle" start="76" stop="76"><pre class="sourceCode yaml"><code class="sourceCode yaml">}</code></pre></div>
+<div class="sourceCode" include="build.gradle" start="66" stop="66"><pre class="sourceCode yaml"><code class="sourceCode yaml">dependencies <span class="kw">{</span></code></pre></div>
+<div class="sourceCode" include="build.gradle" start="76" stop="79"><pre class="sourceCode yaml"><code class="sourceCode yaml">    <span class="fu">testImplementation &#39;org.mockito:</span>mockito-core:2.3.0&#39;
+    <span class="fu">testImplementation &#39;org.powermock:</span>powermock-api-mockito2:1.7.3&#39;
+    <span class="fu">testImplementation &#39;org.robolectric:</span>robolectric:3.5.1&#39;
+}</code></pre></div>
 </section>
 <section class="slide level1">
 
@@ -258,7 +259,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h2 id="unit-testing-an-activity">Unit testing an Activity</h2>
 <p>Suppose you want to unit test and activity. You try this:</p>
-<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java"><span class="kw">public</span> <span class="kw">class</span> DeckardActivityTest {
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java"><span class="kw">public</span> <span class="kw">class</span> DeckardActivityIntegrationTest {
 
     <span class="fu">@Test</span>
     <span class="kw">public</span> <span class="dt">void</span> <span class="fu">whenActivityCreatedAppDependenciesAreSetup</span>() <span class="kw">throws</span> Exception {
@@ -271,8 +272,14 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <section class="slide level1">
 
 <h2 id="error-method-...-not-mocked">Error: &quot;Method ... not mocked&quot;</h2>
-<p>If you run a test that calls an API from the Android SDK that you do not mock, you'll receive an error that says this method is not mocked. That's because the android.jar file used to run unit tests does not contain any actual code (those APIs are provided only by the Android system image on a device).</p>
-<p>Instead, all methods throw exceptions by default.</p>
+<p>If you run a test that calls an API from the Android SDK that you do not mock, you'll receive an error that says this method is not mocked. That's because the android.jar file used to run unit tests does not contain any actual code (those APIs are provided only by the Android system image on a device). Instead, all methods throw exceptions by default, this behaviour can be stopped however:</p>
+<div class="sourceCode" include="build.gradle" start="42" stop="48"><pre class="sourceCode yaml"><code class="sourceCode yaml">    testOptions <span class="kw">{</span>
+        unitTests {
+            includeAndroidResources = true
+            returnDefaultValues = true
+        <span class="kw">}</span>
+
+    }</code></pre></div>
 </section>
 <section class="slide level1">
 
@@ -281,8 +288,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </section>
 <section class="slide level1">
 
-<div class="sourceCode" include="src/test/java/com/example/activity/DeckardActivityTest.java" start="10" stop="18"><pre class="sourceCode java"><code class="sourceCode java"><span class="fu">@RunWith</span>(RobolectricTestRunner.<span class="fu">class</span>)
-<span class="kw">public</span> <span class="kw">class</span> DeckardActivityTest {
+<div class="sourceCode" include="src/test/java/com/example/activity/DeckardActivityIntegrationTest.java" start="10" stop="18"><pre class="sourceCode java"><code class="sourceCode java"><span class="fu">@RunWith</span>(RobolectricTestRunner.<span class="fu">class</span>)
+<span class="kw">public</span> <span class="kw">class</span> DeckardActivityIntegrationTest {
 
     <span class="fu">@Test</span>
     <span class="kw">public</span> <span class="dt">void</span> <span class="fu">whenActivityCreatedAppDependenciesAreSetup</span>() <span class="kw">throws</span> Exception {
@@ -294,8 +301,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <section class="slide level1">
 
 <h2 id="robolectric-in-gradle">Robolectric in Gradle</h2>
-<div class="sourceCode" include="build.gradle" start="65" stop="65"><pre class="sourceCode yaml"><code class="sourceCode yaml">dependencies <span class="kw">{</span></code></pre></div>
-<div class="sourceCode" include="build.gradle" start="75" stop="76"><pre class="sourceCode yaml"><code class="sourceCode yaml">    <span class="fu">testImplementation &#39;org.robolectric:</span>robolectric:3.5.1&#39;
+<div class="sourceCode" include="build.gradle" start="66" stop="66"><pre class="sourceCode yaml"><code class="sourceCode yaml">dependencies <span class="kw">{</span></code></pre></div>
+<div class="sourceCode" include="build.gradle" start="78" stop="79"><pre class="sourceCode yaml"><code class="sourceCode yaml">    <span class="fu">testImplementation &#39;org.robolectric:</span>robolectric:3.5.1&#39;
 }</code></pre></div>
 </section>
 <section class="slide level1">
@@ -315,7 +322,31 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <section class="slide level1">
 
 <h2 id="unit-vs-integration-tests-1">Unit vs Integration Tests</h2>
-<p>The DeckardActivityTest used the real dependency on RestDataController so it is in fact an integration test. Let's look at a class that we can unit test:</p>
+<p>The DeckardActivityIntegrationTest used the real dependency on RestDataController so it is in fact an integration test. We can also make a unit test for this class:</p>
+<div class="sourceCode" include="src/test/java/com/example/activity/DeckardActivityTest.java" start="15" stop="34"><pre class="sourceCode java"><code class="sourceCode java"><span class="fu">@RunWith</span>(MockitoJUnitRunner.<span class="fu">class</span>)
+<span class="kw">public</span> <span class="kw">class</span> DeckardActivityTest {
+    <span class="fu">@Mock</span>
+    Button button;
+
+    <span class="fu">@Mock</span>
+    ButtonClickListener buttonClickListener;
+
+    <span class="fu">@Test</span>
+    <span class="kw">public</span> <span class="dt">void</span> <span class="fu">whenActivityCreatedAppDependenciesAreSetup</span>() <span class="kw">throws</span> Exception {
+        DeckardActivity deckardActivity = <span class="kw">new</span> <span class="fu">DeckardActivity</span>();
+        deckardActivity.<span class="fu">button</span> = button;
+        deckardActivity.<span class="fu">buttonClickHandler</span> = buttonClickListener;
+        deckardActivity.<span class="fu">onCreate</span>(<span class="kw">null</span>);
+        deckardActivity.<span class="fu">afterCreate</span>();
+
+        <span class="fu">verify</span>(buttonClickListener).<span class="fu">setActivity</span>(deckardActivity);
+        <span class="fu">verify</span>(button).<span class="fu">setOnClickListener</span>(buttonClickListener);
+    }
+}</code></pre></div>
+</section>
+<section class="slide level1">
+
+<p>Let's look at another class that we can unit test:</p>
 <div class="sourceCode" include="src/main/java/com/example/activity/ButtonClickListener.java" start="13" stop="42"><pre class="sourceCode java"><code class="sourceCode java"><span class="fu">@EBean</span>
 <span class="kw">class</span> ButtonClickListener <span class="kw">implements</span> IButtonClickListener {
     <span class="kw">private</span> DeckardActivity activity;
@@ -415,19 +446,16 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <section class="slide level1">
 
 <h2 id="retrofit-in-gradle">Retrofit in Gradle</h2>
-<div class="sourceCode" include="build.gradle" start="65" stop="65"><pre class="sourceCode yaml"><code class="sourceCode yaml">dependencies <span class="kw">{</span></code></pre></div>
-<div class="sourceCode" include="build.gradle" start="69" stop="71"><pre class="sourceCode yaml"><code class="sourceCode yaml">    <span class="fu">implementation &#39;com.android.support:</span>support-v4:26.1.0&#39;
-    <span class="fu">implementation &#39;com.squareup.retrofit2:</span>retrofit:2.1.0&#39;
+<div class="sourceCode" include="build.gradle" start="66" stop="66"><pre class="sourceCode yaml"><code class="sourceCode yaml">dependencies <span class="kw">{</span></code></pre></div>
+<div class="sourceCode" include="build.gradle" start="71" stop="72"><pre class="sourceCode yaml"><code class="sourceCode yaml">    <span class="fu">implementation &#39;com.squareup.retrofit2:</span>retrofit:2.1.0&#39;
     <span class="fu">implementation &#39;com.squareup.retrofit2:</span>converter-gson:2.1.0&#39;</code></pre></div>
-<div class="sourceCode" include="build.gradle" start="76" stop="76"><pre class="sourceCode yaml"><code class="sourceCode yaml">}</code></pre></div>
+<div class="sourceCode" include="build.gradle" start="79" stop="79"><pre class="sourceCode yaml"><code class="sourceCode yaml">}</code></pre></div>
 </section>
 <section class="slide level1">
 
 <h2 id="retrofit-in-your-code">Retrofit in your code</h2>
 <p>With Retrofit the REST interface is mapped to a Java interface like this:</p>
 <div class="sourceCode" include="src/main/java/com/example/activity/JsonPlaceHolderAPI.java" start="8" stop="13"><pre class="sourceCode java"><code class="sourceCode java"><span class="kw">interface</span> JsonPlaceHolderAPI {
-    String BASE_URL = <span class="st">&quot;https://jsonplaceholder.typicode.com/&quot;</span>;
-
     <span class="fu">@GET</span>(<span class="st">&quot;comments/{id}&quot;</span>)
     Call&lt;Comment&gt; <span class="fu">getComments</span>(<span class="fu">@Path</span>(<span class="st">&quot;id&quot;</span>) <span class="dt">int</span> id);
 }</code></pre></div>
@@ -436,11 +464,13 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h2 id="retrofit-in-your-code-1">Retrofit in your code</h2>
 <p>Using the Retrofit Builder and a JSON Mapper we can offer a simple Java interface to a client:</p>
-<div class="sourceCode" include="src/main/java/com/example/activity/RetrofitBuilder.java" start="11" stop="19"><pre class="sourceCode java"><code class="sourceCode java"><span class="fu">@EBean</span>
+<div class="sourceCode" include="src/main/java/com/example/activity/RetrofitBuilder.java" start="11" stop="21"><pre class="sourceCode java"><code class="sourceCode java"><span class="fu">@EBean</span>
 <span class="kw">class</span> RetrofitBuilder {
+    <span class="kw">private</span> <span class="dt">final</span> <span class="dt">static</span> String BASE_URL = <span class="st">&quot;https://jsonplaceholder.typicode.com/&quot;</span>;
+
     <span class="kw">public</span> JsonPlaceHolderAPI <span class="fu">create</span>(Class&lt;JsonPlaceHolderAPI&gt; apiClass) {
         Gson gson = <span class="kw">new</span> <span class="fu">GsonBuilder</span>().<span class="fu">setLenient</span>().<span class="fu">create</span>();
-        <span class="kw">return</span> <span class="kw">new</span> Retrofit.<span class="fu">Builder</span>().<span class="fu">baseUrl</span>(JsonPlaceHolderAPI.<span class="fu">BASE_URL</span>).
+        <span class="kw">return</span> <span class="kw">new</span> Retrofit.<span class="fu">Builder</span>().<span class="fu">baseUrl</span>(BASE_URL).
                 <span class="fu">addConverterFactory</span>(
                         GsonConverterFactory.<span class="fu">create</span>(gson)).<span class="fu">build</span>().<span class="fu">create</span>(apiClass);
     }
@@ -452,7 +482,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>And the client can use the interface to call methods just like it's a local method invocation:</p>
 <div class="sourceCode" include="src/main/java/com/example/activity/RestDataController.java" start="11" stop="29"><pre class="sourceCode java"><code class="sourceCode java"><span class="fu">@EBean</span>
 <span class="kw">public</span> <span class="kw">class</span> RestDataController <span class="kw">implements</span> IDataController {
-    <span class="kw">private</span> <span class="dt">final</span> Logger logger = Logger.<span class="fu">getLogger</span>(<span class="fu">getClass</span>().<span class="fu">getName</span>());
+    <span class="kw">private</span> <span class="dt">final</span> <span class="dt">static</span> Logger logger = Logger.<span class="fu">getLogger</span>(RestDataController.<span class="fu">class</span>.<span class="fu">getName</span>());
 
     <span class="fu">@Bean</span>
     RetrofitBuilder retrofitBuilder;
@@ -471,7 +501,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </section>
 <section class="slide level1">
 
-<h2 id="testing-the-restdatacontroller">Testing the RestDataController</h2>
+<h2 id="integration-testing-the-restdatacontroller">Integration Testing the RestDataController</h2>
 <p>To see if the RestDataController really gets the data from our API we can create a simple integration test. We don't need Robolectric here because there are no Android API dependencies to shadow:</p>
 <div class="sourceCode" include="src/test/java/com/example/activity/RestDataControllerIntegrationTest.java" start="7" stop="14"><pre class="sourceCode java"><code class="sourceCode java"><span class="kw">public</span> <span class="kw">class</span> RestDataControllerIntegrationTest {
     <span class="fu">@Test</span>
@@ -481,6 +511,39 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
         <span class="fu">assertTrue</span>(restDataController.<span class="fu">getData</span>().<span class="fu">startsWith</span>(<span class="st">&quot;laudantium&quot;</span>));
     }
 }</code></pre></div>
+</section>
+<section class="slide level1">
+
+<h2 id="unit-testing-the-restdatacontroller">Unit Testing the RestDataController</h2>
+<p>To see if the RestDataController works nicely with the RetrofitBuilder:</p>
+<div class="sourceCode" include="src/test/java/com/example/activity/RestDataControllerTest.java" start="18" stop="45"><pre class="sourceCode java"><code class="sourceCode java"><span class="kw">import static org.mockito.Mockito.verify;</span>
+<span class="kw">import static org.mockito.Mockito.when;</span>
+
+<span class="fu">@RunWith</span>(MockitoJUnitRunner.<span class="fu">class</span>)
+<span class="kw">public</span> <span class="kw">class</span> RestDataControllerTest {
+    <span class="kw">public</span> <span class="dt">static</span> <span class="dt">final</span> String MESSAGE = <span class="st">&quot;message&quot;</span>;
+    <span class="kw">public</span> <span class="dt">static</span> <span class="dt">final</span> String BODY = <span class="st">&quot;body&quot;</span>;
+
+    <span class="fu">@Mock</span>
+    RetrofitBuilder retrofitBuilder;
+
+    <span class="fu">@Mock</span>
+    Logger logger;
+
+    <span class="fu">@Mock</span>
+    JsonPlaceHolderAPI jsonPlaceHolderAPI;
+
+    <span class="fu">@Mock</span>
+    Call&lt;Comment&gt; commentCall;
+
+    <span class="fu">@Test</span>
+    <span class="kw">public</span> <span class="dt">void</span> <span class="fu">whenExceptionIsThrownItsMessageGetsLogged</span>() <span class="kw">throws</span> IOException {
+        RestDataController restDataController = <span class="kw">new</span> <span class="fu">RestDataController</span>();
+        restDataController.<span class="fu">retrofitBuilder</span> = retrofitBuilder;
+        <span class="fu">when</span>(retrofitBuilder.<span class="fu">create</span>(JsonPlaceHolderAPI.<span class="fu">class</span>)).<span class="fu">thenReturn</span>(jsonPlaceHolderAPI);
+        <span class="fu">when</span>(jsonPlaceHolderAPI.<span class="fu">getComments</span>(<span class="dv">1</span>)).<span class="fu">thenReturn</span>(commentCall);
+        <span class="fu">when</span>(commentCall.<span class="fu">execute</span>()).<span class="fu">thenThrow</span>(<span class="kw">new</span> IOException(MESSAGE));
+        Whitebox.<span class="fu">setInternalState</span>(RestDataController.<span class="fu">class</span>, <span class="st">&quot;logger&quot;</span>, logger);</code></pre></div>
 </section>
 <section id="running-tests-and-getting-test-coverage" class="slide level1">
 <h1>Running tests and getting test coverage</h1>
@@ -503,7 +566,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </section>
 <section class="slide level1">
 
-<div class="sourceCode" include="build.gradle" start="78" stop="102"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span class="fu">task createTestReports(type:</span> JacocoReport, dependsOn: [&#39;testDevDebugUnitTest&#39;, &#39;createDevDebugCoverageReport&#39;]) {
+<div class="sourceCode" include="build.gradle" start="81" stop="105"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span class="fu">task createTestReports(type:</span> JacocoReport, dependsOn: [&#39;testDevDebugUnitTest&#39;, &#39;createDevDebugCoverageReport&#39;]) {
     group = <span class="st">&quot;Reporting&quot;</span>
 
     reports <span class="kw">{</span>
