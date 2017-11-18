@@ -94,7 +94,7 @@ task createTestReports(type: JacocoReport, dependsOn: ['testDevDebugUnitTest', '
                       '**/Manifest*.*',
                       '**/*Test*.*',
                       'android/**/*.*']
-    def debugTree = fileTree(dir: "${buildDir}/intermediates/classes/dev/debug", excludes: fileFilter)
+    def debugTree = fileTree(dir: "${buildDir}/intermediates/classes/debug", excludes: fileFilter)
     def mainSrc = "${project.projectDir}/src/main/java"
 
     sourceDirectories = files([mainSrc])
