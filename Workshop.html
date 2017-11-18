@@ -1,0 +1,442 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <meta name="generator" content="pandoc" />
+  <title>Example Android: Unit Testing</title>
+  <style type="text/css">code{white-space: pre;}</style>
+  <style type="text/css">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+  </style>
+</head>
+<body>
+<div id="header">
+<h1 class="title">Example Android: Unit Testing</h1>
+</div>
+<h1 id="prerequisites">Prerequisites</h1>
+<p>To use this example you need to install the following tools:</p>
+<ul>
+<li><a href="http://developer.android.com/sdk/index.html">Android Studio 2.3</a></li>
+<li>The source and build files of this project :)</li>
+</ul>
+<hr />
+<h1 id="unit-testing">Unit Testing</h1>
+<hr />
+<h2 id="testing">Testing</h2>
+<p>For testing Android apps, you typically create <a href="https://developer.android.com/training/testing/unit-testing/index.html">these types of automated unit tests</a>:</p>
+<ul>
+<li>Local tests: Unit tests that run on your local machine only. These tests are compiled to run locally on the Java Virtual Machine (JVM) to minimize execution time. Use this approach to run unit tests that have no dependencies on the Android framework or have dependencies that can be filled by using mock objects.</li>
+</ul>
+<hr />
+<ul>
+<li>Instrumented tests: Unit tests that run on an Android device or emulator. These tests have access to instrumentation information, such as the Context for the app under test. Use this approach to run unit tests that have Android dependencies which cannot be easily filled by using mock objects.</li>
+</ul>
+<hr />
+<h2 id="preface">Preface</h2>
+<p>Suppose you want to build an Android application in a TDD-style. There are a few nasty things about Android that makes unit testing more difficult than for normal Java applications.</p>
+<hr />
+<ul>
+<li>Android source code is Java but it is compiled by the Dalvik compiler to dex. To run it you need an Android device or emulator.</li>
+<li>In a standard Android Application the Android API is everywhere in your code. The Android code is already tested so to only test <em>your</em> application we need to leave Android code outside scope as much as possible. For me <em>unit testing</em> means testing <em>my</em> code apart from the framework (I consider Android as a library and a <a href="https://martinfowler.com/bliki/InversionOfControl.html">framework</a>).</li>
+</ul>
+<hr />
+<p>This codebase uses a few libraries to simplify unit testing for Android applications:</p>
+<ul>
+<li>Android Annotations (if you need more power and be able to handle more complex situations consider ButterKnife for UI binding and Dagger 2 for dependency injections, AA does both)</li>
+<li>Robolectric</li>
+</ul>
+<hr />
+<p>There are also good design and architecture choices to make that simplify unit testing but this example focuses on a simple application and some libraries. Some resources that might help to improve the design of your Android application are:</p>
+<ul>
+<li><a href="https://github.com/android10/Android-CleanArchitecture">Android Clean Architecture</a></li>
+<li><a href="https://www.youtube.com/watch?v=bXRI7YAha1M">Effective Android Architecture</a></li>
+</ul>
+<hr />
+<h1 id="android-annotations">Android Annotations</h1>
+<hr />
+<h2 id="android-annotations-1">Android Annotations</h2>
+<ul>
+<li>AndroidAnnotations is an Open Source annotation processing library that speeds up Android development</li>
+<li>It takes care of the plumbing, and lets you concentrate on what's really important.</li>
+<li>By simplifying your code, it facilitates its maintenance.</li>
+</ul>
+<hr />
+<h2 id="annotation-processing">Annotation Processing</h2>
+<ul>
+<li>Annotation Processing is a feature of the Java compiler that lets you write a library to process source code annotations at compile time</li>
+<li>Runs your annotation processing code in the compiler and can generate new source code files that will also be compiled</li>
+<li>There is no way with public API to modify existing classes</li>
+</ul>
+<hr />
+<h2 id="how-does-it-work">How does it work</h2>
+<ul>
+<li>AndroidAnnotations is a Java Annotation Processing Tool that generates Android specific source code based on annotations</li>
+<li>It enhances a class by subclassing it with a generated class that adds and overrides methods in the annotated class</li>
+<li>The generated class is named by appending an underscore to the name of the annotated class</li>
+</ul>
+<hr />
+<h2 id="how-do-you-use-it">How do you use it</h2>
+<p>Everywhere in the project that you refer to an enhanced class you append an underscore to the class name:</p>
+<ul>
+<li>In the Android Manifest</li>
+<li>In layout resources</li>
+<li>In the code, even in your test code</li>
+</ul>
+<hr />
+<h2 id="example-activity-and-views">Example: Activity and Views</h2>
+<div class="sourceCode" include="src/main/java/com/example/activity/DeckardActivity.java" start="15" stop="22"><pre class="sourceCode java"><code class="sourceCode java"><span class="fu">@EActivity</span>(R.<span class="fu">layout</span>.<span class="fu">deckard</span>)
+<span class="kw">public</span> <span class="kw">class</span> DeckardActivity <span class="kw">extends</span> Activity {
+    <span class="fu">@ViewById</span>(R.<span class="fu">id</span>.<span class="fu">button</span>)
+    Button button;
+
+    <span class="fu">@ViewById</span>(R.<span class="fu">id</span>.<span class="fu">editText</span>)
+    TextView editText;
+</code></pre></div>
+<div class="sourceCode" include="src/main/java/com/example/activity/DeckardActivity.java" start="37" stop="37"><pre class="sourceCode java"><code class="sourceCode java">}</code></pre></div>
+<hr />
+<h2 id="example-bean-and-ebean">Example: Bean and EBean</h2>
+<div class="sourceCode" include="src/main/java/com/example/activity/DeckardActivity.java" start="15" stop="16"><pre class="sourceCode java"><code class="sourceCode java"><span class="fu">@EActivity</span>(R.<span class="fu">layout</span>.<span class="fu">deckard</span>)
+<span class="kw">public</span> <span class="kw">class</span> DeckardActivity <span class="kw">extends</span> Activity {</code></pre></div>
+<div class="sourceCode" include="src/main/java/com/example/activity/DeckardActivity.java" start="22" stop="37"><pre class="sourceCode java"><code class="sourceCode java">
+    <span class="fu">@Bean</span>(ButtonClickListener.<span class="fu">class</span>)
+    IButtonClickListener buttonClickHandler;
+
+    <span class="fu">@Override</span>
+    <span class="kw">protected</span> <span class="dt">void</span> <span class="fu">onCreate</span>(Bundle savedInstanceState) {
+        <span class="kw">super</span>.<span class="fu">onCreate</span>(savedInstanceState);
+    }
+
+    <span class="fu">@AfterViews</span>
+    <span class="kw">public</span> <span class="dt">void</span> <span class="fu">afterCreate</span>()
+    {
+        buttonClickHandler.<span class="fu">setActivity</span>(<span class="kw">this</span>);
+        button.<span class="fu">setOnClickListener</span>(buttonClickHandler);
+    }
+}</code></pre></div>
+<hr />
+<h2 id="example-background-and-uithread">Example: Background and UIThread</h2>
+<div class="sourceCode" include="src/main/java/com/example/activity/ButtonClickListener.java" start="13" stop="42"><pre class="sourceCode java"><code class="sourceCode java"><span class="fu">@EBean</span>
+<span class="kw">class</span> ButtonClickListener <span class="kw">implements</span> IButtonClickListener {
+    <span class="kw">private</span> DeckardActivity activity;
+    <span class="kw">private</span> IDataController dataController;
+
+    <span class="fu">@Bean</span>(RestDataController.<span class="fu">class</span>)
+    <span class="dt">void</span> <span class="fu">setDataController</span>(IDataController dataController){
+        <span class="kw">this</span>.<span class="fu">dataController</span> = dataController;
+    }
+
+    <span class="fu">@Override</span>
+    <span class="kw">public</span> <span class="dt">void</span> <span class="fu">onClick</span>(View view) {
+        <span class="fu">getAsyncComment</span>();
+    }
+
+    <span class="fu">@Background</span>
+    <span class="dt">void</span> <span class="fu">getAsyncComment</span>() {
+        <span class="fu">updateTextField</span>(dataController.<span class="fu">getData</span>());
+    }
+
+    <span class="fu">@UiThread</span>
+    <span class="dt">void</span> <span class="fu">updateTextField</span>(String data) {
+        EditText editText = activity.<span class="fu">findViewById</span>(R.<span class="fu">id</span>.<span class="fu">editText</span>);
+        editText.<span class="fu">setText</span>(data);
+    }
+
+    <span class="kw">public</span> <span class="dt">void</span> <span class="fu">setActivity</span>(DeckardActivity activity) {
+        <span class="kw">this</span>.<span class="fu">activity</span> = activity;
+    }
+}</code></pre></div>
+<hr />
+<h2 id="android-annotations-in-gradle">Android Annotations in Gradle</h2>
+<div class="sourceCode" include="build.gradle" start="65" stop="67"><pre class="sourceCode yaml"><code class="sourceCode yaml">dependencies <span class="kw">{</span>
+    <span class="fu">implementation &quot;org.androidannotations:</span>androidannotations-api:4.4.0&quot;
+    annotationProcessor &quot;org.androidannotations:androidannotations:4.4.0&quot;</code></pre></div>
+<div class="sourceCode" include="build.gradle" start="76" stop="76"><pre class="sourceCode yaml"><code class="sourceCode yaml">}</code></pre></div>
+<hr />
+<h1 id="mocking">Mocking</h1>
+<hr />
+<h2 id="junit-and-mockito-in-gradle">JUnit and Mockito in Gradle</h2>
+<p>Just like in Maven:</p>
+<div class="sourceCode" include="build.gradle" start="65" stop="65"><pre class="sourceCode yaml"><code class="sourceCode yaml">dependencies <span class="kw">{</span></code></pre></div>
+<div class="sourceCode" include="build.gradle" start="73" stop="74"><pre class="sourceCode yaml"><code class="sourceCode yaml">    <span class="fu">testImplementation &#39;junit:</span>junit:4.12&#39;
+    <span class="fu">testImplementation &#39;org.mockito:</span>mockito-core:2.3.0&#39;</code></pre></div>
+<div class="sourceCode" include="build.gradle" start="76" stop="76"><pre class="sourceCode yaml"><code class="sourceCode yaml">}</code></pre></div>
+<hr />
+<h2 id="robolectric">Robolectric</h2>
+<p>Running tests on an Android emulator or device is slow! Building, deploying, and launching the app often takes a minute or more. That’s no way to do TDD. There must be a better way.</p>
+<hr />
+<h2 id="unit-testing-an-activity">Unit testing an Activity</h2>
+<p>Suppose you want to unit test and activity. You try this:</p>
+<div class="sourceCode"><pre class="sourceCode java"><code class="sourceCode java"><span class="kw">public</span> <span class="kw">class</span> DeckardActivityTest {
+
+    <span class="fu">@Test</span>
+    <span class="kw">public</span> <span class="dt">void</span> <span class="fu">whenActivityCreatedAppDependenciesAreSetup</span>() <span class="kw">throws</span> Exception {
+        DeckardActivity deckardActivity = <span class="kw">new</span> <span class="fu">DeckardActivity</span>();
+        <span class="fu">assertNotNull</span>(deckardActivity.<span class="fu">buttonClickHandler</span>);
+    }
+}</code></pre></div>
+<p>When you run this test, the console says: <a href="https://developer.android.com/training/testing/unit-testing/local-unit-tests.html">&quot;Error: 'Method ... not mocked'&quot;</a></p>
+<hr />
+<h2 id="error-method-...-not-mocked">Error: &quot;Method ... not mocked&quot;</h2>
+<p>If you run a test that calls an API from the Android SDK that you do not mock, you'll receive an error that says this method is not mocked. That's because the android.jar file used to run unit tests does not contain any actual code (those APIs are provided only by the Android system image on a device).</p>
+<p>Instead, all methods throw exceptions by default.</p>
+<hr />
+<h2 id="running-unit-tests-without-android-device">Running unit tests without Android device</h2>
+<p><a href="http://robolectric.org/">Robolectric</a> is a unit test framework that de-fangs the Android SDK jar so you can test-drive the development of your Android app. Tests run inside the JVM on your workstation in seconds. With Robolectric and Android Annotations you can write tests like this:</p>
+<hr />
+<div class="sourceCode" include="src/test/java/com/example/activity/DeckardActivityTest.java" start="10" stop="18"><pre class="sourceCode java"><code class="sourceCode java"><span class="fu">@RunWith</span>(RobolectricTestRunner.<span class="fu">class</span>)
+<span class="kw">public</span> <span class="kw">class</span> DeckardActivityTest {
+
+    <span class="fu">@Test</span>
+    <span class="kw">public</span> <span class="dt">void</span> <span class="fu">whenActivityCreatedAppDependenciesAreSetup</span>() <span class="kw">throws</span> Exception {
+        DeckardActivity_ deckardActivity = Robolectric.<span class="fu">setupActivity</span>(DeckardActivity_.<span class="fu">class</span>);
+        <span class="fu">assertNotNull</span>(deckardActivity.<span class="fu">buttonClickHandler</span>);
+    }
+}</code></pre></div>
+<hr />
+<h2 id="robolectric-in-gradle">Robolectric in Gradle</h2>
+<div class="sourceCode" include="build.gradle" start="65" stop="65"><pre class="sourceCode yaml"><code class="sourceCode yaml">dependencies <span class="kw">{</span></code></pre></div>
+<div class="sourceCode" include="build.gradle" start="75" stop="76"><pre class="sourceCode yaml"><code class="sourceCode yaml">    <span class="fu">testImplementation &#39;org.robolectric:</span>robolectric:3.5.1&#39;
+}</code></pre></div>
+<hr />
+<p>Noticed the _ after DeckardActivity? This is the version that comes from Android Annotations (AA) annotation processor. When you use this version all annotations like <span class="citation">@Activity</span> and <span class="citation">@Bean</span> are resolved. Decide per test cases if you need the real dependencies for <span class="citation">@Bean</span> or override the properties with test doubles like stubs or mocks.</p>
+<hr />
+<h2 id="test-doubles">Test Doubles</h2>
+<div class="figure">
+<img src="http://xunitpatterns.com/Types%20Of%20Test%20Doubles-implementation.gif" alt="Figure 1: Different Test Doubles" />
+<p class="caption">Figure 1: Different Test Doubles</p>
+</div>
+<hr />
+<h1 id="unit-vs-integration-tests">Unit vs Integration Tests</h1>
+<hr />
+<h2 id="unit-vs-integration-tests-1">Unit vs Integration Tests</h2>
+<p>The DeckardActivityTest used the real dependency on RestDataController so it is in fact an integration test. Let's look at a class that we can unit test:</p>
+<div class="sourceCode" include="src/main/java/com/example/activity/ButtonClickListener.java" start="13" stop="42"><pre class="sourceCode java"><code class="sourceCode java"><span class="fu">@EBean</span>
+<span class="kw">class</span> ButtonClickListener <span class="kw">implements</span> IButtonClickListener {
+    <span class="kw">private</span> DeckardActivity activity;
+    <span class="kw">private</span> IDataController dataController;
+
+    <span class="fu">@Bean</span>(RestDataController.<span class="fu">class</span>)
+    <span class="dt">void</span> <span class="fu">setDataController</span>(IDataController dataController){
+        <span class="kw">this</span>.<span class="fu">dataController</span> = dataController;
+    }
+
+    <span class="fu">@Override</span>
+    <span class="kw">public</span> <span class="dt">void</span> <span class="fu">onClick</span>(View view) {
+        <span class="fu">getAsyncComment</span>();
+    }
+
+    <span class="fu">@Background</span>
+    <span class="dt">void</span> <span class="fu">getAsyncComment</span>() {
+        <span class="fu">updateTextField</span>(dataController.<span class="fu">getData</span>());
+    }
+
+    <span class="fu">@UiThread</span>
+    <span class="dt">void</span> <span class="fu">updateTextField</span>(String data) {
+        EditText editText = activity.<span class="fu">findViewById</span>(R.<span class="fu">id</span>.<span class="fu">editText</span>);
+        editText.<span class="fu">setText</span>(data);
+    }
+
+    <span class="kw">public</span> <span class="dt">void</span> <span class="fu">setActivity</span>(DeckardActivity activity) {
+        <span class="kw">this</span>.<span class="fu">activity</span> = activity;
+    }
+}</code></pre></div>
+<hr />
+<p>The ButtonClickListener had two dependencies:</p>
+<ul>
+<li>The DeckardActivity</li>
+<li>The RestDataController</li>
+</ul>
+<p>Both dependencies can be mocked:</p>
+<hr />
+<h2 id="drinking-mockito-when-youre-in-aa">Drinking Mockito when you're in AA :)</h2>
+<div class="sourceCode" include="src/test/java/com/example/activity/ButtonClickListenerTest.java" start="16" stop="43"><pre class="sourceCode java"><code class="sourceCode java"><span class="fu">@RunWith</span>(org.<span class="fu">mockito</span>.<span class="fu">junit</span>.<span class="fu">MockitoJUnitRunner</span>.<span class="fu">class</span>)
+<span class="kw">public</span> <span class="kw">class</span> ButtonClickListenerTest {
+    <span class="fu">@Mock</span>
+    DeckardActivity deckardActivity;
+
+    <span class="fu">@Mock</span>
+    IDataController dataController;
+
+    <span class="fu">@InjectMocks</span>
+    ButtonClickListener buttonClickListener;
+
+    <span class="fu">@Mock</span>
+    EditText editText;
+
+    <span class="fu">@Mock</span>
+    View eventSource;
+
+    <span class="fu">@Test</span>
+    <span class="kw">public</span> <span class="dt">void</span> <span class="fu">whenButtonClickedTheEditTextContainsHelloOOSE</span>()
+    {
+        <span class="fu">when</span>(deckardActivity.<span class="fu">findViewById</span>(R.<span class="fu">id</span>.<span class="fu">editText</span>)).<span class="fu">thenReturn</span>(editText);
+        <span class="fu">when</span>(dataController.<span class="fu">getData</span>()).<span class="fu">thenReturn</span>(<span class="st">&quot;Hello OOSE&quot;</span>);
+        buttonClickListener.<span class="fu">setActivity</span>(deckardActivity);
+        buttonClickListener.<span class="fu">setDataController</span>(dataController);
+        buttonClickListener.<span class="fu">onClick</span>(eventSource);
+        <span class="fu">verify</span>(editText).<span class="fu">setText</span>(<span class="st">&quot;Hello OOSE&quot;</span>);
+    }
+}</code></pre></div>
+<hr />
+<h1 id="rest">REST</h1>
+<hr />
+<h2 id="doing-rest-calls-in-android">Doing REST calls in Android</h2>
+<p>We saw the RestDataController as a dependency for the ButtonClickListener, but how to do REST calls from an Android device?</p>
+<p>There are two things things to consider:</p>
+<ul>
+<li>Android does not allow you to access services on the main thread, luckily AA has <span class="citation">@Background</span> and <span class="citation">@UIThread</span> (but you can do this with standard Android <a href="https://developer.android.com/guide/components/processes-and-threads.html">too</a>)</li>
+<li>You need to alter the AndroidManifest.xml:</li>
+</ul>
+<div class="sourceCode" include="src/main/AndroidManifest.xml" start="15" stop="15"><pre class="sourceCode xml"><code class="sourceCode xml">    <span class="kw">&lt;uses-permission</span><span class="ot"> android:name=</span><span class="st">&quot;android.permission.INTERNET&quot;</span><span class="kw">/&gt;</span></code></pre></div>
+<hr />
+<h2 id="rest-in-android-retrofit2">REST in Android: Retrofit2</h2>
+<p>There are different options/APIs to do REST calls:</p>
+<ul>
+<li>JAX-RS Client, like Jersey. Heavyweight, has an own DI container (HK2) built on Guice.</li>
+<li>Spring RestTemplate (or use AA's annotation to access this template). Can cause dependency problems with HTTP Commons.</li>
+<li>Use Retrofit2, this is my favourite.</li>
+</ul>
+<hr />
+<h2 id="retrofit-in-gradle">Retrofit in Gradle</h2>
+<div class="sourceCode" include="build.gradle" start="65" stop="65"><pre class="sourceCode yaml"><code class="sourceCode yaml">dependencies <span class="kw">{</span></code></pre></div>
+<div class="sourceCode" include="build.gradle" start="69" stop="71"><pre class="sourceCode yaml"><code class="sourceCode yaml">    <span class="fu">implementation &#39;com.android.support:</span>support-v4:26.1.0&#39;
+    <span class="fu">implementation &#39;com.squareup.retrofit2:</span>retrofit:2.1.0&#39;
+    <span class="fu">implementation &#39;com.squareup.retrofit2:</span>converter-gson:2.1.0&#39;</code></pre></div>
+<div class="sourceCode" include="build.gradle" start="76" stop="76"><pre class="sourceCode yaml"><code class="sourceCode yaml">}</code></pre></div>
+<hr />
+<h2 id="retrofit-in-your-code">Retrofit in your code</h2>
+<p>With Retrofit the REST interface is mapped to a Java interface like this:</p>
+<div class="sourceCode" include="src/main/java/com/example/activity/JsonPlaceHolderAPI.java" start="8" stop="13"><pre class="sourceCode java"><code class="sourceCode java"><span class="kw">interface</span> JsonPlaceHolderAPI {
+    String BASE_URL = <span class="st">&quot;https://jsonplaceholder.typicode.com/&quot;</span>;
+
+    <span class="fu">@GET</span>(<span class="st">&quot;comments/{id}&quot;</span>)
+    Call&lt;Comment&gt; <span class="fu">getComments</span>(<span class="fu">@Path</span>(<span class="st">&quot;id&quot;</span>) <span class="dt">int</span> id);
+}</code></pre></div>
+<hr />
+<h2 id="retrofit-in-your-code-1">Retrofit in your code</h2>
+<p>Using the Retrofit Builder and a JSON Mapper we can offer a simple Java interface to a client:</p>
+<div class="sourceCode" include="src/main/java/com/example/activity/RetrofitBuilder.java" start="11" stop="19"><pre class="sourceCode java"><code class="sourceCode java"><span class="fu">@EBean</span>
+<span class="kw">class</span> RetrofitBuilder {
+    <span class="kw">public</span> JsonPlaceHolderAPI <span class="fu">create</span>(Class&lt;JsonPlaceHolderAPI&gt; apiClass) {
+        Gson gson = <span class="kw">new</span> <span class="fu">GsonBuilder</span>().<span class="fu">setLenient</span>().<span class="fu">create</span>();
+        <span class="kw">return</span> <span class="kw">new</span> Retrofit.<span class="fu">Builder</span>().<span class="fu">baseUrl</span>(JsonPlaceHolderAPI.<span class="fu">BASE_URL</span>).
+                <span class="fu">addConverterFactory</span>(
+                        GsonConverterFactory.<span class="fu">create</span>(gson)).<span class="fu">build</span>().<span class="fu">create</span>(apiClass);
+    }
+}</code></pre></div>
+<hr />
+<h2 id="retrofit-in-your-code-2">Retrofit in your code</h2>
+<p>And the client can use the interface to call methods just like it's a local method invocation:</p>
+<div class="sourceCode" include="src/main/java/com/example/activity/RestDataController.java" start="11" stop="29"><pre class="sourceCode java"><code class="sourceCode java"><span class="fu">@EBean</span>
+<span class="kw">public</span> <span class="kw">class</span> RestDataController <span class="kw">implements</span> IDataController {
+    <span class="kw">private</span> <span class="dt">final</span> Logger logger = Logger.<span class="fu">getLogger</span>(<span class="fu">getClass</span>().<span class="fu">getName</span>());
+
+    <span class="fu">@Bean</span>
+    RetrofitBuilder retrofitBuilder;
+
+    <span class="fu">@Override</span>
+    <span class="kw">public</span> String <span class="fu">getData</span>() {
+        <span class="kw">try</span> {
+            <span class="kw">return</span> retrofitBuilder.<span class="fu">create</span>(JsonPlaceHolderAPI.<span class="fu">class</span>).
+                    <span class="fu">getComments</span>(<span class="dv">1</span>).<span class="fu">execute</span>().<span class="fu">body</span>().<span class="fu">getBody</span>();
+        } <span class="kw">catch</span> (IOException e) {
+            logger.<span class="fu">log</span>(Level.<span class="fu">SEVERE</span>, e.<span class="fu">getMessage</span>());
+        }
+        <span class="kw">return</span> <span class="kw">null</span>;
+    }
+}</code></pre></div>
+<hr />
+<h2 id="testing-the-restdatacontroller">Testing the RestDataController</h2>
+<p>To see if the RestDataController really gets the data from our API we can create a simple integration test. We don't need Robolectric here because there are no Android API dependencies to shadow:</p>
+<div class="sourceCode" include="src/test/java/com/example/activity/RestDataControllerIntegrationTest.java" start="7" stop="14"><pre class="sourceCode java"><code class="sourceCode java"><span class="kw">public</span> <span class="kw">class</span> RestDataControllerIntegrationTest {
+    <span class="fu">@Test</span>
+    <span class="kw">public</span> <span class="dt">void</span> <span class="fu">whenFirstCommentIsRequestedItShouldStartWithLaudantium</span>()
+    {
+        RestDataController_ restDataController = RestDataController_.<span class="fu">getInstance_</span>(<span class="kw">null</span>);
+        <span class="fu">assertTrue</span>(restDataController.<span class="fu">getData</span>().<span class="fu">startsWith</span>(<span class="st">&quot;laudantium&quot;</span>));
+    }
+}</code></pre></div>
+<hr />
+<h1 id="running-tests-and-getting-test-coverage">Running tests and getting test coverage</h1>
+<hr />
+<h2 id="running-tests-in-gradle">Running tests in Gradle</h2>
+<div class="sourceCode"><pre class="sourceCode yaml"><code class="sourceCode yaml">./gradlew test</code></pre></div>
+<hr />
+<h2 id="getting-test-coverage-for-android-projects">Getting test coverage for Android projects</h2>
+<p>Jacoco is a tool for Java application that is able to generate a test coverage file that can be read by SonarQube. We need the following adjustments to build.gradle:</p>
+<div class="sourceCode" include="build.gradle" start="21" stop="21"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span class="fu">apply plugin:</span> <span class="st">&#39;jacoco&#39;</span></code></pre></div>
+<div class="sourceCode" include="build.gradle" start="36" stop="40"><pre class="sourceCode yaml"><code class="sourceCode yaml">    buildTypes <span class="kw">{</span>
+        debug {
+            testCoverageEnabled true
+        <span class="kw">}</span>
+    }</code></pre></div>
+<hr />
+<div class="sourceCode" include="build.gradle" start="78" stop="102"><pre class="sourceCode yaml"><code class="sourceCode yaml"><span class="fu">task createTestReports(type:</span> JacocoReport, dependsOn: [&#39;testDevDebugUnitTest&#39;, &#39;createDevDebugCoverageReport&#39;]) {
+    group = <span class="st">&quot;Reporting&quot;</span>
+
+    reports <span class="kw">{</span>
+        xml.enabled = true
+        html.enabled = true
+    <span class="kw">}</span>
+
+    def fileFilter = <span class="kw">[</span><span class="st">&#39;**/R.class&#39;</span><span class="kw">,</span>
+                      <span class="st">&#39;**/R$*.class&#39;</span><span class="kw">,</span>
+                      <span class="st">&#39;**/BuildConfig.*&#39;</span><span class="kw">,</span>
+                      <span class="st">&#39;**/*$ViewInjector*.*&#39;</span><span class="kw">,</span>
+                      <span class="st">&#39;**/*$ViewBinder*.*&#39;</span><span class="kw">,</span>
+                      <span class="st">&#39;**/*$MembersInjector*.*&#39;</span><span class="kw">,</span>
+                      <span class="st">&#39;**/Manifest*.*&#39;</span><span class="kw">,</span>
+                      <span class="st">&#39;**/*Test*.*&#39;</span><span class="kw">,</span>
+                      <span class="st">&#39;android/**/*.*&#39;</span><span class="kw">]</span>
+    <span class="fu">def debugTree = fileTree(dir:</span> <span class="st">&quot;${buildDir}/intermediates/classes/debug&quot;</span><span class="er">, excludes: fileFilter)</span>
+    def mainSrc = <span class="st">&quot;${project.projectDir}/src/main/java&quot;</span>
+
+    sourceDirectories = files(<span class="kw">[</span>mainSrc<span class="kw">]</span>)
+    classDirectories = files(<span class="kw">[</span>debugTree<span class="kw">]</span>)
+
+    executionData = files(<span class="st">&quot;${project.buildDir}/jacoco/testDebugUnitTest.exec&quot;</span>)
+}</code></pre></div>
+<h1 id="resources">Resources</h1>
+<ul>
+<li><a href="https://developer.android.com/training/testing/unit-testing/local-unit-tests.html">Building Local Tests</a></li>
+<li><a href="https://developer.android.com/training/testing/unit-testing/index.html">Building Effective Unit Tests</a></li>
+<li><a href="https://github.com/androidannotations/androidannotations/wiki/Unit-test-your-application">Unit Test your Application</a></li>
+<li><a href="https://github.com/androidannotations/androidannotations/wiki/Cookbook">Android Annotations Cookbook</a></li>
+</ul>
+</body>
+</html>
