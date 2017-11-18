@@ -99,6 +99,4 @@ task createTestReports(type: JacocoReport, dependsOn: ['testDevDebugUnitTest', '
     classDirectories = files([debugTree])
 
     executionData = files("${project.buildDir}/jacoco/testDebugUnitTest.exec")
-    //def files = fileTree("${buildDir}/outputs/code-coverage/connected/flavors/DEV/").filter { it.isFile() }.files.name
-    //instrumentationFileName = "${buildDir}/outputs/code-coverage/connected/flavors/DEV/" + files[0];
 }

@@ -303,10 +303,22 @@ Running tests in Gradle
 ./gradlew test
 ```
 
+-------
+
 Getting test coverage for Android projects
 ==========================================
 
-Jacoco is a tool for Java application that is able to generate a test coverage file that can be read by SonarQube
+Jacoco is a tool for Java application that is able to generate a test coverage file that can be read by SonarQube. We need the following adjustments to build.gradle:
+
+```{.yaml include="build.gradle" start="21" stop="21"}
+```
+
+```{.yaml include="build.gradle" start="36" stop="40"}
+```
+
+```{.yaml include="build.gradle" start="78" stop="102"}
+```
+
 
 
 Resources
