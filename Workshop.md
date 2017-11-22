@@ -1,6 +1,6 @@
 ---
 title: "Example Android: Unit Testing"
-subject: "An example to learn how to unit test Android applications with Android Annotations, Robolectric, Mocktito and Jacoco"
+subject: "An example to learn how to unit test Android applications with Android Annotations, Robolectric, Mockito and Jacoco"
 titlepage: true
 titlepage-color: AF9162
 titlepage-text-color: ffffff
