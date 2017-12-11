@@ -13,8 +13,3 @@
     ```bash
     ./gradlew test
     ```
-2. Finally you can build a debug `.apk` of the project for installation on phones:
-    ```bash
-    ./gradlew assemble
-    ```
-    This will output the file to `build/outputs/apk/*-debug.apk`
